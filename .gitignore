@@ -27,3 +27,7 @@ run_log
 .idea
 
 config/*.json
+
+node_modules/
+.wrangler/
+worker/dist/

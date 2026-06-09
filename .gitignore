@@ -35,3 +35,8 @@ worker/.dev.vars
 worker/.next/
 worker/.open-next/
 worker/tsconfig.tsbuildinfo
+
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example

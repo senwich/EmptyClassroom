@@ -20,7 +20,7 @@ export async function handleReport(request: Request, env: Env): Promise<Response
   }
 
   if (!env.LARK_WEBHOOK) {
-    await env.EC_CACHE.put(`REPORT:${Date.now()}`, JSON.stringify({ text, at: new Date().toISOString() }), {
+    await env.KV.put(`REPORT:${Date.now()}`, JSON.stringify({ text, at: new Date().toISOString() }), {
       expirationTtl: 30 * 24 * 60 * 60,
     });
     return jsonResponse({ code: 0, msg: 'stored' });

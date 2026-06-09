@@ -1,0 +1,23 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "empty-classroom-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-02-04",
+  "observability": {
+    "enabled": true
+  },
+  "kv_namespaces": [
+    {
+      "binding": "KV",
+      "id": "68787afc4bc242baa04e4f1fcb2ca0a5"
+    }
+  ],
+  "vars": {
+    // Do not put JW_USERNAME or JW_PASSWORD here. Add them as encrypted
+    // Cloudflare Worker secrets in the dashboard before going live.
+    "EC_CONFIG_JSON": "{\"class_table\":{\"start_week\":\"2099-01-01\",\"end_week\":\"2099-01-02\",\"unable_reason\":\"配置未初始化\",\"is_available\":false,\"class_table_map\":{}},\"campus\":[],\"notification\":{\"title\":\"\",\"content\":\"\",\"duration\":0,\"type\":\"info\",\"showNotification\":false,\"start\":\"2099-01-01 00:00:00\",\"end\":\"2099-01-01 00:00:00\"}}"
+  },
+  "triggers": {
+    "crons": ["*/5 * * * *"]
+  }
+}

@@ -17,7 +17,7 @@ describe('config loading', () => {
     const env = makeEnv(makeConfig());
     const kvConfig = makeConfig();
     kvConfig.campus[0].name = '沙河';
-    await env.EC_CACHE.put('CONFIG_JSON', JSON.stringify(kvConfig));
+    await env.KV.put('CONFIG_JSON', JSON.stringify(kvConfig));
 
     const loaded = await loadConfig(env);
     expect(loaded.campus[0].name).toBe('沙河');
@@ -27,8 +27,8 @@ describe('config loading', () => {
     const config = makeConfig();
     config.class_table.class_table_map = {};
     const env = makeEnv(config);
-    await env.EC_CACHE.put('CAMPUS_TABLES_JSON', JSON.stringify(makeConfig().class_table.class_table_map));
-    await env.EC_CACHE.put(
+    await env.KV.put('CAMPUS_TABLES_JSON', JSON.stringify(makeConfig().class_table.class_table_map));
+    await env.KV.put(
       'NOTIFICATION_JSON',
       JSON.stringify({
         title: 'kv notice',

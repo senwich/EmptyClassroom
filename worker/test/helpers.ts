@@ -75,7 +75,7 @@ export function makeConfig(): Config {
 
 export function makeEnv(config = makeConfig()): Env {
   return {
-    EC_CACHE: new MemoryKV() as unknown as KVNamespace,
+    KV: new MemoryKV() as unknown as KVNamespace,
     JW_USERNAME: 'user',
     JW_PASSWORD: 'pwd',
     EC_CONFIG_JSON: JSON.stringify(config),

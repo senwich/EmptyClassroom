@@ -11,8 +11,8 @@ describe('queryAll', () => {
 
     expect(data.class_table).not.toBeNull();
     expect(data.notification?.title).toBe('notice');
-    await expect(env.EC_CACHE.get(TODAY_CACHE_KEY)).resolves.toBeTruthy();
-    await expect(env.EC_CACHE.get(TODAY_STALE_CACHE_KEY)).resolves.toBeTruthy();
+    await expect(env.KV.get(TODAY_CACHE_KEY)).resolves.toBeTruthy();
+    await expect(env.KV.get(TODAY_STALE_CACHE_KEY)).resolves.toBeTruthy();
   });
 
   it('uses realtime data when campus has realtime enabled', async () => {

@@ -1,5 +1,5 @@
 export type Env = {
-  EC_CACHE: KVNamespace;
+  KV: KVNamespace;
   JW_USERNAME?: string;
   JW_PASSWORD?: string;
   LARK_WEBHOOK?: string;

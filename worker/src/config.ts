@@ -5,7 +5,7 @@ const CAMPUS_TABLES_JSON_KEY = 'CAMPUS_TABLES_JSON';
 const NOTIFICATION_JSON_KEY = 'NOTIFICATION_JSON';
 
 async function readJsonSource(env: Env, kvKey: string, envKey: keyof Env): Promise<string | null> {
-  const kvValue = await env.EC_CACHE.get(kvKey);
+  const kvValue = await env.KV.get(kvKey);
   if (kvValue) {
     return kvValue;
   }

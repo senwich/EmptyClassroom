@@ -1,0 +1,8 @@
+# Copy to .dev.vars for local development only. Do not commit .dev.vars.
+# In Cloudflare Dashboard, add these as encrypted Worker secrets.
+
+JW_USERNAME=your_jw_username_here
+JW_PASSWORD=your_jw_password_here
+
+# Optional. If omitted, reports are stored in KV as REPORT:<timestamp>.
+LARK_WEBHOOK=

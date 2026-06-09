@@ -31,3 +31,4 @@ config/*.json
 node_modules/
 .wrangler/
 worker/dist/
+worker/.dev.vars

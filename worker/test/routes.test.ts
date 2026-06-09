@@ -12,7 +12,7 @@ describe('routes', () => {
       class_table: null,
       notification: null,
     };
-    await env.EC_CACHE.put(TODAY_CACHE_KEY, JSON.stringify(cached));
+    await env.KV.put(TODAY_CACHE_KEY, JSON.stringify(cached));
 
     const resp = await route(new Request('https://example.com/api/get_data'), env);
     expect(resp.status).toBe(200);
@@ -30,7 +30,7 @@ describe('routes', () => {
     );
 
     expect(resp.status).toBe(200);
-    const list = await env.EC_CACHE.list();
+    const list = await env.KV.list();
     expect(list.keys.some((key) => key.name.startsWith('REPORT:'))).toBe(true);
   });
 

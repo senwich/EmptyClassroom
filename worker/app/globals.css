@@ -1,0 +1,64 @@
+body {
+  margin: 0;
+}
+
+body.dark {
+  background-color: #141414;
+}
+
+.app-shell {
+  min-height: 100vh;
+  text-align: center;
+  padding: 24px 12px 40px;
+}
+
+.logo-mark {
+  width: 88px;
+  height: 88px;
+  margin: 0 auto 8px;
+  border-radius: 28px;
+  display: grid;
+  place-items: center;
+  color: white;
+  font-size: 42px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #1677ff, #69b1ff 55%, #95de64);
+  box-shadow: 0 16px 40px rgba(22, 119, 255, 0.25);
+}
+
+.toolbar-card,
+.result-card {
+  width: min(940px, 94vw);
+  margin: 16px auto;
+  text-align: left;
+  box-shadow: 0 12px 32px 4px #0000000a, 0 8px 20px #00000014;
+}
+
+.toolbar-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.footer {
+  opacity: 0.68;
+  font-size: 12px;
+  margin-top: 24px;
+}
+
+@media (max-width: 640px) {
+  .app-shell {
+    padding-top: 16px;
+  }
+
+  .logo-mark {
+    width: 72px;
+    height: 72px;
+    font-size: 34px;
+  }
+}

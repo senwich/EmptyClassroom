@@ -32,3 +32,6 @@ node_modules/
 .wrangler/
 worker/dist/
 worker/.dev.vars
+worker/.next/
+worker/.open-next/
+worker/tsconfig.tsbuildinfo

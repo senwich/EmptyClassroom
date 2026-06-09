@@ -1,11 +1,25 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "empty-classroom-api",
-  "main": "src/index.ts",
+  "main": "worker.ts",
   "compatibility_date": "2025-02-04",
+  "compatibility_flags": [
+    "nodejs_compat",
+    "global_fetch_strictly_public"
+  ],
   "observability": {
     "enabled": true
   },
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "empty-classroom-api"
+    }
+  ],
   "kv_namespaces": [
     {
       "binding": "KV",

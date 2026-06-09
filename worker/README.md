@@ -1,6 +1,6 @@
-# Empty Classroom Worker
+# Empty Classroom Next Worker
 
-Cloudflare Worker rewrite of the Go API. It keeps the existing frontend API shape:
+Unified Next.js + TypeScript app for Cloudflare Workers. It serves the frontend and API from one Worker:
 
 - `GET /api/get_data`
 - `POST /api/report`
@@ -89,9 +89,15 @@ Recommended KV keys:
 
 ```bash
 npm install
+npm run dev
+```
+
+Validation:
+
+```bash
 npm test
 npm run typecheck
-npx wrangler dev
+npm run build
 ```
 
 ## Deploy
@@ -108,9 +114,11 @@ For **Create a Worker -> Connect to GitHub**:
 | Setting | Value |
 |---|---|
 | Root directory | `worker` |
-| Build command | `npm run typecheck && npm test` |
+| Build command | `npm install && npm run typecheck && npm test` |
 | Deploy command | `npm run deploy` |
 | Wrangler config | `worker/wrangler.jsonc` |
+
+Do not use `npx wrangler deploy` directly for this unified Next.js app. `npm run deploy` runs `opennextjs-cloudflare build` first and then deploys the generated Worker bundle.
 
 Cloudflare will read `wrangler.jsonc` from the `worker` directory when that is the project root.
 
@@ -136,8 +144,9 @@ Local checks:
 ```bash
 npm run typecheck
 npm test
+npm run build
 npm audit
-npx wrangler deploy --dry-run --outdir dist
+npm run upload -- --dry-run
 ```
 
 Online checks after replacing the KV namespace id and setting secrets:

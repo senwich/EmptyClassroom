@@ -1,16 +1,48 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "ES2022",
+    "module": "esnext",
     "moduleResolution": "Bundler",
-    "lib": ["ES2022", "WebWorker"],
-    "types": ["@cloudflare/workers-types", "vitest/globals"],
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable",
+      "WebWorker"
+    ],
+    "types": [
+      "@cloudflare/workers-types",
+      "vitest/globals"
+    ],
     "strict": true,
+    "jsx": "react-jsx",
+    "allowJs": true,
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
     "noEmit": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "esModuleInterop": true
   },
-  "include": ["src", "test", "vitest.config.ts"]
+  "include": [
+    "next-env.d.ts",
+    ".next/types/**/*.ts",
+    "app",
+    "components",
+    "src",
+    "test",
+    "vitest.config.ts",
+    "next.config.ts",
+    "open-next.config.ts",
+    "worker.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

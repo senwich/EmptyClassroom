@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { TODAY_CACHE_KEY } from '../src/cache';
-import { route } from '../src/routes';
+import { getCachedClassInfo } from '../src/cache';
+import { handleReport } from '../src/report';
 import { makeEnv } from './helpers';
 
-describe('routes', () => {
-  it('returns cached data from get_data', async () => {
+describe('api handlers', () => {
+  it('reads cached data through cache backend', async () => {
     const env = makeEnv();
     const cached = {
       update_at: '2024-03-18T01:00:00.000Z',
@@ -14,14 +15,12 @@ describe('routes', () => {
     };
     await env.KV.put(TODAY_CACHE_KEY, JSON.stringify(cached));
 
-    const resp = await route(new Request('https://example.com/api/get_data'), env);
-    expect(resp.status).toBe(200);
-    await expect(resp.json()).resolves.toEqual({ code: 0, data: cached });
+    await expect(getCachedClassInfo(env)).resolves.toEqual(cached);
   });
 
   it('stores report in KV when webhook is not configured', async () => {
     const env = makeEnv();
-    const resp = await route(
+    const resp = await handleReport(
       new Request('https://example.com/api/report', {
         method: 'POST',
         body: JSON.stringify({ text: 'hello' }),
@@ -36,7 +35,7 @@ describe('routes', () => {
 
   it('rejects invalid report body', async () => {
     const env = makeEnv();
-    const resp = await route(
+    const resp = await handleReport(
       new Request('https://example.com/api/report', {
         method: 'POST',
         body: JSON.stringify({}),

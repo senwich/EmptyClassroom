@@ -2,6 +2,8 @@ export type Env = {
   KV: KVNamespace;
   JW_USERNAME?: string;
   JW_PASSWORD?: string;
+  JW_PROXY_URL?: string;
+  JW_PROXY_TOKEN?: string;
   LARK_WEBHOOK?: string;
   EC_CONFIG_JSON?: string;
   EC_CAMPUS_TABLES_JSON?: string;

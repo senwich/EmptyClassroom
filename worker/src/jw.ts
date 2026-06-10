@@ -246,6 +246,10 @@ async function queryClassroomTable(env: Env, jar: CookieJar, origin: string, cam
 }
 
 export async function queryOne(env: Env, campusId: number): Promise<JWClassInfo[]> {
+  if (env.JW_PROXY_URL) {
+    return queryOneViaProxy(env, campusId);
+  }
+
   const { jar, origin } = await login(env);
   const html = await queryClassroomTable(env, jar, origin, campusId);
   const data = parseClassroomTable(html);
@@ -253,6 +257,25 @@ export async function queryOne(env: Env, campusId: number): Promise<JWClassInfo[
     throw new Error(`QZ classroom query returned no occupied classrooms for campus ${campusId}`);
   }
   return data;
+}
+
+async function queryOneViaProxy(env: Env, campusId: number): Promise<JWClassInfo[]> {
+  const token = requireSecret(env.JW_PROXY_TOKEN, 'JW_PROXY_TOKEN');
+  const baseUrl = env.JW_PROXY_URL?.replace(/\/+$/u, '');
+  const resp = await fetchWithTimeout(env.EC_FETCH ?? fetch, `${baseUrl}/api/query?campusId=${campusId}`, {
+    headers: {
+      authorization: `Bearer ${token}`,
+    },
+  });
+  const text = await resp.text();
+  if (!resp.ok) {
+    throw new Error(`JW proxy query failed: url=${baseUrl}/api/query?campusId=${campusId} status=${resp.status} body=${text.slice(0, 300) || '<empty>'}`);
+  }
+  const data = JSON.parse(text) as { data?: JWClassInfo[]; error?: string };
+  if (!Array.isArray(data.data)) {
+    throw new Error(`JW proxy returned invalid data: ${data.error ?? text.slice(0, 300)}`);
+  }
+  return data.data;
 }
 
 export const __test__ = { parseClassroomTable };

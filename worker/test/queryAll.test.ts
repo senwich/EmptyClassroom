@@ -82,6 +82,26 @@ describe('queryAll', () => {
     await expect(env.KV.get(TODAY_CACHE_KEY)).resolves.toBeTruthy();
   });
 
+  it('uses configured proxy for realtime data', async () => {
+    const config = makeConfig();
+    config.campus[0].has_realtime = true;
+    const env = makeEnv(config);
+    env.JW_PROXY_URL = 'https://proxy.example.test';
+    env.JW_PROXY_TOKEN = 'secret';
+    env.EC_FETCH = async (input, init) => {
+      expect(String(input)).toBe('https://proxy.example.test/api/query?campusId=1');
+      expect(new Headers(init?.headers).get('authorization')).toBe('Bearer secret');
+      return Response.json({
+        data: [{ CLASSROOMS: '教一-101(80)', NODETIME: '', NODENAME: '2' }],
+      });
+    };
+
+    const data = await queryAll(env, new Date('2024-03-18T01:00:00+08:00'));
+
+    expect(data.is_fallback).toEqual({});
+    expect(data.campus_info_map?.西土城.building_info_map['0'].class_matrix[1][0]).toBe(0);
+  });
+
   it('rejects when neither config nor realtime data can provide classrooms', async () => {
     const config = makeConfig();
     config.campus = [];

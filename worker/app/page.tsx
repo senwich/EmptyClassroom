@@ -166,8 +166,6 @@ export default function Home() {
                 dataSource={emptyClassrooms}
                 columns={[
                   { title: '教室', dataIndex: 'name', align: 'center' },
-                  { title: '座位数', dataIndex: 'size', align: 'center' },
-                  { title: '类型', dataIndex: 'type', align: 'center' },
                   {
                     title: '来源',
                     dataIndex: 'canTrust',

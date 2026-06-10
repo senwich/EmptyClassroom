@@ -179,6 +179,14 @@ export default function Home() {
             )}
           </Card>
 
+          <div className="ad-support-bar">
+            <span className="ad-support-icon" aria-hidden="true">📣</span>
+            <span>
+              为了本项目的可持续健康发展，诚征校内外研究生招生广告，相关收益将用于支持项目运营。合作联系：
+              <a href="mailto:chengensen@foxmail.com">chengensen@foxmail.com</a>
+              ，谢谢您的支持！
+            </span>
+          </div>
           <div className="footer">Cloudflare Workers + Next.js + TypeScript</div>
         </main>
       </Spin>

@@ -51,6 +51,34 @@ body.dark {
   margin-top: 24px;
 }
 
+.ad-support-bar {
+  width: min(940px, 94vw);
+  margin: 24px auto 0;
+  padding: 10px 14px;
+  border: 1px solid #d9ecff;
+  border-radius: 12px;
+  background: #f0f7ff;
+  color: #244263;
+  font-size: 13px;
+  line-height: 1.6;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+.ad-support-icon {
+  margin-right: 6px;
+}
+
+.ad-support-bar a {
+  color: #1677ff;
+}
+
+body.dark .ad-support-bar {
+  border-color: #15395b;
+  background: #111f2f;
+  color: #d8e8f8;
+}
+
 @media (max-width: 640px) {
   .app-shell {
     padding-top: 16px;

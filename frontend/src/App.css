@@ -10,3 +10,31 @@
     margin-top: -2em;
     margin-bottom: -2em;
 }
+
+.ad-support-bar {
+    width: min(940px, 92vw);
+    margin: 24px auto 12px;
+    padding: 10px 14px;
+    border: 1px solid #d9ecff;
+    border-radius: 12px;
+    background: #f0f7ff;
+    color: #244263;
+    font-size: 13px;
+    line-height: 1.6;
+    text-align: left;
+    box-sizing: border-box;
+}
+
+.ad-support-icon {
+    margin-right: 6px;
+}
+
+.ad-support-bar a {
+    color: #1677ff;
+}
+
+.dark .ad-support-bar {
+    border-color: #15395b;
+    background: #111f2f;
+    color: #d8e8f8;
+}

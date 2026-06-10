@@ -56,11 +56,13 @@ describe('queryAll', () => {
     config.campus = [];
     config.class_table.class_table_map = {};
     const env = makeEnv(config);
+    const queryUrls: string[] = [];
     env.EC_FETCH = async (input) => {
       const url = String(input);
       if (url.includes('/login')) {
         return Response.json({ code: '1', data: { token: 'token' } });
       }
+      queryUrls.push(url);
       return Response.json({
         code: '1',
         data: [{ CLASSROOMS: '教一-101(80)', NODETIME: '', NODENAME: '2' }],
@@ -70,6 +72,10 @@ describe('queryAll', () => {
     const data = await queryAll(env, new Date('2024-03-18T01:00:00+08:00'));
 
     expect(Object.keys(data.campus_info_map ?? {})).toEqual(['西土城', '沙河']);
+    expect(queryUrls).toEqual([
+      'http://jwglweixin.bupt.edu.cn/bjyddx/todayClassrooms?campusId=01',
+      'http://jwglweixin.bupt.edu.cn/bjyddx/todayClassrooms?campusId=02',
+    ]);
     await expect(env.KV.get(TODAY_CACHE_KEY)).resolves.toBeTruthy();
   });
 
@@ -80,9 +86,9 @@ describe('queryAll', () => {
     const env = makeEnv(config);
     env.EC_FETCH = async () => Response.json({ code: '0', Msg: 'failed' });
 
-    await expect(queryAll(env, new Date('2024-03-18T01:00:00+08:00'))).rejects.toThrow('no classroom data loaded');
+    await expect(queryAll(env, new Date('2024-03-18T01:00:00+08:00'))).rejects.toThrow('西土城: login failed');
     await expect(env.KV.get(TODAY_CACHE_KEY)).resolves.toBeNull();
-    await expect(env.KV.get(LAST_REFRESH_ERROR_KEY)).resolves.toContain('login failed');
+    await expect(env.KV.get(LAST_REFRESH_ERROR_KEY)).resolves.toContain('沙河: login failed');
   }, 15000);
 
   it('hides notification and class table outside active windows', async () => {

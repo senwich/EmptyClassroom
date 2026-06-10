@@ -54,6 +54,10 @@ function addClassroom(buildingInfo: BuildingInfo, classroomInfo: ClassroomInfo):
   return id;
 }
 
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 export function processClassTableInfo(config: Config, classInfo: ClassInfo, campusName: string, now = shanghaiNow()): void {
   const start = parseShanghaiDate(config.class_table.start_week);
   const end = parseShanghaiDate(config.class_table.end_week);
@@ -185,6 +189,7 @@ export async function queryAll(env: Env, now = shanghaiNow()): Promise<ClassInfo
     class_table: null,
     notification: null,
   };
+  const realtimeErrors: string[] = [];
 
   for (const campus of config.campus) {
     processClassTableInfo(config, classInfo, campus.name, now);
@@ -193,7 +198,7 @@ export async function queryAll(env: Env, now = shanghaiNow()): Promise<ClassInfo
         const jwClassInfo = await queryOne(env, campus.id ?? 0);
         processJWClassInfo(config, jwClassInfo, classInfo, campus);
       } catch (error) {
-        await recordRefreshError(env, error);
+        realtimeErrors.push(`${campus.name}: ${errorMessage(error)}`);
         classInfo.is_fallback[campus.name] = true;
         processJWClassInfo(config, null, classInfo, campus);
       }
@@ -201,7 +206,14 @@ export async function queryAll(env: Env, now = shanghaiNow()): Promise<ClassInfo
   }
 
   if (usingDefaultCampuses && (!classInfo.campus_info_map || Object.keys(classInfo.campus_info_map).length === 0)) {
-    throw new Error('no classroom data loaded; check JW_USERNAME/JW_PASSWORD or CONFIG_JSON');
+    const details = realtimeErrors.length > 0 ? ` (${realtimeErrors.join('; ')})` : '';
+    const error = new Error(`no classroom data loaded; check JW_USERNAME/JW_PASSWORD or CONFIG_JSON${details}`);
+    await recordRefreshError(env, error);
+    throw error;
+  }
+
+  if (realtimeErrors.length > 0) {
+    await recordRefreshError(env, new Error(realtimeErrors.join('; ')));
   }
 
   const notificationStart = parseShanghaiDateTime(config.notification.start);

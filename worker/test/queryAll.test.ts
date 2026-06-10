@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TODAY_CACHE_KEY, TODAY_STALE_CACHE_KEY } from '../src/cache';
+import { LAST_REFRESH_ERROR_KEY, TODAY_CACHE_KEY, TODAY_STALE_CACHE_KEY } from '../src/cache';
 import { queryAll } from '../src/classTable';
 import { makeConfig, makeEnv } from './helpers';
 
@@ -48,6 +48,16 @@ describe('queryAll', () => {
 
     expect(data.is_fallback).toEqual({ 西土城: true });
     expect(data.campus_info_map?.西土城.building_info_map['0'].classroom_info_map['0'].can_trust).toBe(false);
+    await expect(env.KV.get(LAST_REFRESH_ERROR_KEY)).resolves.toContain('login failed');
+  });
+
+  it('rejects empty campus config instead of caching empty data', async () => {
+    const config = makeConfig();
+    config.campus = [];
+    const env = makeEnv(config);
+
+    await expect(queryAll(env, new Date('2024-03-18T01:00:00+08:00'))).rejects.toThrow('missing campus config');
+    await expect(env.KV.get(TODAY_CACHE_KEY)).resolves.toBeNull();
   });
 
   it('hides notification and class table outside active windows', async () => {

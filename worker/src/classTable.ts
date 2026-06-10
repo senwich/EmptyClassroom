@@ -1,4 +1,4 @@
-import { setCachedClassInfo } from './cache';
+import { recordRefreshError, setCachedClassInfo } from './cache';
 import { loadConfig } from './config';
 import { queryOne } from './jw';
 import { parseShanghaiDate, parseShanghaiDateTime, shanghaiNow, shanghaiWeekday, toIsoFromShanghaiNow } from './time';
@@ -169,6 +169,10 @@ export function processJWClassInfo(config: Config, jwClassInfo: JWClassInfo[] | 
 
 export async function queryAll(env: Env, now = shanghaiNow()): Promise<ClassInfo> {
   const config = await loadConfig(env);
+  if (config.campus.length === 0) {
+    throw new Error('missing campus config: add CONFIG_JSON to KV or EC_CONFIG_JSON env');
+  }
+
   const classInfo: ClassInfo = {
     update_at: toIsoFromShanghaiNow(),
     is_fallback: {},
@@ -182,7 +186,8 @@ export async function queryAll(env: Env, now = shanghaiNow()): Promise<ClassInfo
       try {
         const jwClassInfo = await queryOne(env, campus.id ?? 0);
         processJWClassInfo(config, jwClassInfo, classInfo, campus);
-      } catch {
+      } catch (error) {
+        await recordRefreshError(env, error);
         classInfo.is_fallback[campus.name] = true;
         processJWClassInfo(config, null, classInfo, campus);
       }

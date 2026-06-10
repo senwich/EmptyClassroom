@@ -4,6 +4,11 @@ import { queryOne } from './jw';
 import { parseShanghaiDate, parseShanghaiDateTime, shanghaiNow, shanghaiWeekday, toIsoFromShanghaiNow } from './time';
 import type { BuildingInfo, CampusConfig, CampusInfo, ClassInfo, ClassroomInfo, Config, Env, JWClassInfo } from './types';
 
+const DEFAULT_REALTIME_CAMPUSES: CampusConfig[] = [
+  { name: '西土城', id: 1, has_realtime: true, replace_regex: [] },
+  { name: '沙河', id: 2, has_realtime: true, replace_regex: [] },
+];
+
 function emptyClassMatrix(defaultValue = 0): number[][] {
   return Array.from({ length: 14 }, () => [] as number[]).map((row) => row.map(() => defaultValue));
 }
@@ -169,8 +174,9 @@ export function processJWClassInfo(config: Config, jwClassInfo: JWClassInfo[] | 
 
 export async function queryAll(env: Env, now = shanghaiNow()): Promise<ClassInfo> {
   const config = await loadConfig(env);
+  const usingDefaultCampuses = config.campus.length === 0;
   if (config.campus.length === 0) {
-    throw new Error('missing campus config: add CONFIG_JSON to KV or EC_CONFIG_JSON env');
+    config.campus = DEFAULT_REALTIME_CAMPUSES;
   }
 
   const classInfo: ClassInfo = {
@@ -192,6 +198,10 @@ export async function queryAll(env: Env, now = shanghaiNow()): Promise<ClassInfo
         processJWClassInfo(config, null, classInfo, campus);
       }
     }
+  }
+
+  if (usingDefaultCampuses && (!classInfo.campus_info_map || Object.keys(classInfo.campus_info_map).length === 0)) {
+    throw new Error('no classroom data loaded; check JW_USERNAME/JW_PASSWORD or CONFIG_JSON');
   }
 
   const notificationStart = parseShanghaiDateTime(config.notification.start);

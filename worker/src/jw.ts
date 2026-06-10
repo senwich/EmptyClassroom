@@ -1,7 +1,7 @@
 import type { Env, JWClassInfo, LoginResponse, QueryResponse } from './types';
 
 const LOGIN_URL = 'http://jwglweixin.bupt.edu.cn/bjyddx/login';
-const QUERY_URL = 'http://jwglweixin.bupt.edu.cn/bjyddx/todayClassrooms?campusId=0';
+const QUERY_URL = 'http://jwglweixin.bupt.edu.cn/bjyddx/todayClassrooms?campusId=';
 
 function requireSecret(value: string | undefined, name: string): string {
   if (!value) {

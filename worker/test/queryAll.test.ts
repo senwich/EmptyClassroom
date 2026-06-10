@@ -51,14 +51,39 @@ describe('queryAll', () => {
     await expect(env.KV.get(LAST_REFRESH_ERROR_KEY)).resolves.toContain('login failed');
   });
 
-  it('rejects empty campus config instead of caching empty data', async () => {
+  it('uses default realtime campuses when config has no campus list', async () => {
     const config = makeConfig();
     config.campus = [];
+    config.class_table.class_table_map = {};
     const env = makeEnv(config);
+    env.EC_FETCH = async (input) => {
+      const url = String(input);
+      if (url.includes('/login')) {
+        return Response.json({ code: '1', data: { token: 'token' } });
+      }
+      return Response.json({
+        code: '1',
+        data: [{ CLASSROOMS: '教一-101(80)', NODETIME: '', NODENAME: '2' }],
+      });
+    };
 
-    await expect(queryAll(env, new Date('2024-03-18T01:00:00+08:00'))).rejects.toThrow('missing campus config');
-    await expect(env.KV.get(TODAY_CACHE_KEY)).resolves.toBeNull();
+    const data = await queryAll(env, new Date('2024-03-18T01:00:00+08:00'));
+
+    expect(Object.keys(data.campus_info_map ?? {})).toEqual(['西土城', '沙河']);
+    await expect(env.KV.get(TODAY_CACHE_KEY)).resolves.toBeTruthy();
   });
+
+  it('rejects when neither config nor realtime data can provide classrooms', async () => {
+    const config = makeConfig();
+    config.campus = [];
+    config.class_table.class_table_map = {};
+    const env = makeEnv(config);
+    env.EC_FETCH = async () => Response.json({ code: '0', Msg: 'failed' });
+
+    await expect(queryAll(env, new Date('2024-03-18T01:00:00+08:00'))).rejects.toThrow('no classroom data loaded');
+    await expect(env.KV.get(TODAY_CACHE_KEY)).resolves.toBeNull();
+    await expect(env.KV.get(LAST_REFRESH_ERROR_KEY)).resolves.toContain('login failed');
+  }, 15000);
 
   it('hides notification and class table outside active windows', async () => {
     const env = makeEnv();

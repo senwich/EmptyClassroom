@@ -161,6 +161,12 @@ async function probeLoggedIn(label, session) {
       const compact = table.text.replace(/\s+/g, ' ');
       const rows = Array.from(compact.matchAll(/<tr\b[^>]*>(.*?)<\/tr>/gi), (match) => match[0]);
       console.log(`${label}: table ${name} first rows=${rows.slice(0, 5).join(' ').slice(0, 2400)}`);
+      const dataRows = Array.from(table.text.matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr>/gi), (match) =>
+        Array.from(match[1].matchAll(/<t[dh]\b([^>]*)>([\s\S]*?)<\/t[dh]>/gi), (cell) => ({ attrs: cell[1], text: cell[2].replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim() })),
+      ).filter((cells) => cells.length > 20);
+      for (const [rowIndex, cells] of dataRows.slice(0, 8).entries()) {
+        console.log(`${label}: data-row ${name} #${rowIndex} cells=${cells.slice(0, 5).map((cell) => `[${cell.attrs}]${cell.text}`).join(' | ')} total=${cells.length}`);
+      }
     }
   }
 }

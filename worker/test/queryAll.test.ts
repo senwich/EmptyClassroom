@@ -25,6 +25,22 @@ function mockQzFetch(queryUrls?: string[]): typeof fetch {
   };
 }
 
+function mockQzFetchWithClassroom(classroom: string): typeof fetch {
+  return async (input) => {
+    const url = String(input);
+    if (url.endsWith('/jsxsd/')) {
+      return new Response('login page');
+    }
+    if (url.includes('/jsxsd/xk/LoginToXk')) {
+      return new Response('', { status: 302, headers: { location: 'https://jwgl.bupt.edu.cn/jsxsd/framework/xsMain_bjyddx.jsp' } });
+    }
+    if (url.includes('/jsxsd/kbcx/kbxx_classroom_ifr')) {
+      return new Response(qzTableHtml(classroom), { headers: { 'content-type': 'text/html' } });
+    }
+    return new Response('', { status: 404 });
+  };
+}
+
 describe('queryAll', () => {
   it('writes fresh and stale caches on success', async () => {
     const env = makeEnv();
@@ -100,6 +116,18 @@ describe('queryAll', () => {
 
     expect(data.is_fallback).toEqual({});
     expect(data.campus_info_map?.西土城.building_info_map['0'].class_matrix[1][0]).toBe(0);
+  });
+
+  it('applies original Go classroom name rules to QZ data', async () => {
+    const config = makeConfig();
+    config.campus[0].has_realtime = true;
+    const env = makeEnv(config);
+    env.EC_FETCH = mockQzFetchWithClassroom('2-138');
+
+    const data = await queryAll(env, new Date('2024-03-18T01:00:00+08:00'));
+
+    expect(data.campus_info_map?.西土城.building_info_map['1'].name).toBe('教2');
+    expect(data.campus_info_map?.西土城.building_info_map['1'].classroom_id_map['138']).toBe(0);
   });
 
   it('rejects when neither config nor realtime data can provide classrooms', async () => {

@@ -1,10 +1,7 @@
 import type { Env, JWClassInfo } from './types';
 import { shanghaiNow, shanghaiWeekday } from './time';
 
-const ORIGIN = 'https://jwgl.bupt.edu.cn';
-const LOGIN_PAGE_URL = `${ORIGIN}/jsxsd/`;
-const LOGIN_URL = `${ORIGIN}/jsxsd/xk/LoginToXk`;
-const CLASSROOM_TABLE_URL = `${ORIGIN}/jsxsd/kbcx/kbxx_classroom_ifr`;
+const ORIGINS = ['https://jwgl.bupt.edu.cn', 'http://jwgl.bupt.edu.cn'];
 const DEFAULT_CLASS_TIME_MODE = '9475847A3F3033D1E05377B5030AA94D';
 
 const CAMPUS_ID_MAP: Record<number, { qzId: string; namePrefix: string }> = {
@@ -66,6 +63,32 @@ async function request(fetcher: typeof fetch, jar: CookieJar, input: string, ini
   return resp;
 }
 
+async function responseSnippet(resp: Response): Promise<string> {
+  try {
+    return (await resp.clone().text()).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 300);
+  } catch (error) {
+    return `failed to read response body: ${error instanceof Error ? error.message : String(error)}`;
+  }
+}
+
+async function statusError(label: string, url: string, resp: Response): Promise<Error> {
+  const snippet = await responseSnippet(resp);
+  return new Error(`${label} failed: url=${url} status=${resp.status} body=${snippet || '<empty>'}`);
+}
+
+async function requestFirstOk(fetcher: typeof fetch, jar: CookieJar, path: string, init: RequestInit = {}): Promise<{ resp: Response; origin: string }> {
+  const failures: string[] = [];
+  for (const origin of ORIGINS) {
+    const url = `${origin}${path}`;
+    const resp = await request(fetcher, jar, url, init);
+    if (resp.status !== 530) {
+      return { resp, origin };
+    }
+    failures.push(`${url} status=530 body=${(await responseSnippet(resp)) || '<empty>'}`);
+  }
+  throw new Error(`all QZ origins failed: ${failures.join('; ')}`);
+}
+
 function encodeInp(input: string): string {
   const bytes = new TextEncoder().encode(input);
   let binary = '';
@@ -75,15 +98,15 @@ function encodeInp(input: string): string {
   return btoa(binary);
 }
 
-async function login(env: Env): Promise<CookieJar> {
+async function login(env: Env): Promise<{ jar: CookieJar; origin: string }> {
   const fetcher = env.EC_FETCH ?? fetch;
   const username = requireSecret(env.JW_USERNAME, 'JW_USERNAME');
   const password = requireSecret(env.JW_PASSWORD, 'JW_PASSWORD');
   const jar = new CookieJar();
 
-  const pageResp = await request(fetcher, jar, LOGIN_PAGE_URL);
+  const { resp: pageResp, origin } = await requestFirstOk(fetcher, jar, '/jsxsd/');
   if (!pageResp.ok) {
-    throw new Error(`QZ login page failed with status ${pageResp.status}`);
+    throw await statusError('QZ login page', `${origin}/jsxsd/`, pageResp);
   }
 
   const body = new URLSearchParams({
@@ -91,11 +114,11 @@ async function login(env: Env): Promise<CookieJar> {
     userPassword: '',
     encoded: `${encodeInp(username)}%%%${encodeInp(password)}`,
   });
-  const resp = await request(fetcher, jar, LOGIN_URL, {
+  const resp = await request(fetcher, jar, `${origin}/jsxsd/xk/LoginToXk`, {
     method: 'POST',
     headers: {
       'content-type': 'application/x-www-form-urlencoded',
-      referer: LOGIN_PAGE_URL,
+      referer: `${origin}/jsxsd/`,
     },
     body,
   });
@@ -103,10 +126,10 @@ async function login(env: Env): Promise<CookieJar> {
   const location = resp.headers.get('location') ?? '';
   if (resp.status !== 302 || !location.includes('/jsxsd/framework/')) {
     const message = /用户登录|请输入账号|登录/.test(text) ? 'login rejected' : text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120);
-    throw new Error(`QZ login failed: ${message || `status ${resp.status}`}`);
+    throw new Error(`QZ login failed: url=${origin}/jsxsd/xk/LoginToXk status=${resp.status} location=${location || '<none>'} body=${message || '<empty>'}`);
   }
 
-  return jar;
+  return { jar, origin };
 }
 
 function htmlText(value: string): string {
@@ -195,17 +218,17 @@ function parseClassroomTable(html: string, now = shanghaiNow()): JWClassInfo[] {
     }));
 }
 
-async function queryClassroomTable(env: Env, jar: CookieJar, campusId: number): Promise<string> {
+async function queryClassroomTable(env: Env, jar: CookieJar, origin: string, campusId: number): Promise<string> {
   const campus = CAMPUS_ID_MAP[campusId];
   if (!campus) {
     throw new Error(`unsupported campus id ${campusId}`);
   }
   const fetcher = env.EC_FETCH ?? fetch;
-  const resp = await request(fetcher, jar, CLASSROOM_TABLE_URL, {
+  const resp = await request(fetcher, jar, `${origin}/jsxsd/kbcx/kbxx_classroom_ifr`, {
     method: 'POST',
     headers: {
       'content-type': 'application/x-www-form-urlencoded',
-      referer: `${ORIGIN}/jsxsd/kbcx/kbxx_classroom`,
+      referer: `${origin}/jsxsd/kbcx/kbxx_classroom`,
     },
     body: new URLSearchParams({
       xqid: campus.qzId,
@@ -214,7 +237,7 @@ async function queryClassroomTable(env: Env, jar: CookieJar, campusId: number): 
   });
   const text = await resp.text();
   if (!resp.ok) {
-    throw new Error(`${campus.namePrefix} classroom query failed with status ${resp.status}`);
+    throw new Error(`${campus.namePrefix} classroom query failed: url=${origin}/jsxsd/kbcx/kbxx_classroom_ifr status=${resp.status} body=${text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 300) || '<empty>'}`);
   }
   if (/用户登录|请输入账号/u.test(text)) {
     throw new Error(`${campus.namePrefix} classroom query returned login page`);
@@ -223,8 +246,8 @@ async function queryClassroomTable(env: Env, jar: CookieJar, campusId: number): 
 }
 
 export async function queryOne(env: Env, campusId: number): Promise<JWClassInfo[]> {
-  const jar = await login(env);
-  const html = await queryClassroomTable(env, jar, campusId);
+  const { jar, origin } = await login(env);
+  const html = await queryClassroomTable(env, jar, origin, campusId);
   const data = parseClassroomTable(html);
   if (data.length === 0) {
     throw new Error(`QZ classroom query returned no occupied classrooms for campus ${campusId}`);

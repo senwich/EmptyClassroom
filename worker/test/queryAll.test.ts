@@ -108,7 +108,7 @@ describe('queryAll', () => {
       expect(String(input)).toBe('https://proxy.example.test/api/query?campusId=1');
       expect(new Headers(init?.headers).get('authorization')).toBe('Bearer secret');
       return Response.json({
-        data: [{ CLASSROOMS: '教一-101(80)', NODETIME: '', NODENAME: '2' }],
+        html: qzTableHtml('教一-101(80)'),
       });
     };
 

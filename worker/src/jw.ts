@@ -20,6 +20,7 @@ const CLASSROOM_NAME_RULES: Record<number, Array<{ pattern: RegExp; replacement:
     { pattern: /^经管楼(\d.+)$/u, replacement: '经管楼-$1' },
     { pattern: /^(东.)-(\d+)$/u, replacement: '本部图书馆-$1$2' },
     { pattern: /^图书馆一层$/u, replacement: '本部图书馆-一层' },
+    { pattern: /^学-(.*)$/u, replacement: '学10-$1' },
     { pattern: /^工程管理仿真中心$/u, replacement: '学10-工程管理仿真中心' },
   ],
   2: [
@@ -276,6 +277,19 @@ async function queryClassroomTable(env: Env, jar: CookieJar, origin: string, cam
   return text;
 }
 
+export async function queryClassroomTableHtml(env: Env, campusId: number): Promise<string> {
+  const { jar, origin } = await login(env);
+  return queryClassroomTable(env, jar, origin, campusId);
+}
+
+export function parseClassroomTableHtml(html: string, campusId: number, now = shanghaiNow()): JWClassInfo[] {
+  const data = parseClassroomTable(html, now, campusId);
+  if (data.length === 0) {
+    throw new Error(`QZ classroom query returned no available classrooms for campus ${campusId}`);
+  }
+  return data;
+}
+
 export async function queryOne(env: Env, campusId: number): Promise<JWClassInfo[]> {
   if (env.JW_PROXY_URL) {
     return queryOneViaProxy(env, campusId);
@@ -283,11 +297,7 @@ export async function queryOne(env: Env, campusId: number): Promise<JWClassInfo[
 
   const { jar, origin } = await login(env);
   const html = await queryClassroomTable(env, jar, origin, campusId);
-  const data = parseClassroomTable(html, shanghaiNow(), campusId);
-  if (data.length === 0) {
-    throw new Error(`QZ classroom query returned no occupied classrooms for campus ${campusId}`);
-  }
-  return data;
+  return parseClassroomTableHtml(html, campusId);
 }
 
 async function queryOneViaProxy(env: Env, campusId: number): Promise<JWClassInfo[]> {
@@ -302,11 +312,11 @@ async function queryOneViaProxy(env: Env, campusId: number): Promise<JWClassInfo
   if (!resp.ok) {
     throw new Error(`JW proxy query failed: url=${baseUrl}/api/query?campusId=${campusId} status=${resp.status} body=${text.slice(0, 300) || '<empty>'}`);
   }
-  const data = JSON.parse(text) as { data?: JWClassInfo[]; error?: string };
-  if (!Array.isArray(data.data)) {
+  const data = JSON.parse(text) as { html?: string; error?: string };
+  if (typeof data.html !== 'string') {
     throw new Error(`JW proxy returned invalid data: ${data.error ?? text.slice(0, 300)}`);
   }
-  return data.data;
+  return parseClassroomTableHtml(data.html, campusId);
 }
 
 export const __test__ = { parseClassroomTable };

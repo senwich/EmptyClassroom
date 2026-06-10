@@ -1,7 +1,7 @@
 import { createServer } from 'node:http';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { queryOne } from '../src/jw.ts';
+import { queryClassroomTableHtml } from '../src/jw.ts';
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
@@ -83,14 +83,14 @@ const server = createServer(async (req, res) => {
 
     const cached = cache.get(campusId);
     if (cached && cached.expiresAt > Date.now()) {
-      json(res, 200, { data: cached.data, cached: true, update_at: cached.updateAt });
+      json(res, 200, { html: cached.html, cached: true, update_at: cached.updateAt });
       return;
     }
 
-    const data = await queryOne({ JW_USERNAME: username, JW_PASSWORD: password }, campusId);
+    const html = await queryClassroomTableHtml({ JW_USERNAME: username, JW_PASSWORD: password }, campusId);
     const updateAt = new Date().toISOString();
-    cache.set(campusId, { data, updateAt, expiresAt: Date.now() + CACHE_TTL_MS });
-    json(res, 200, { data, cached: false, update_at: updateAt });
+    cache.set(campusId, { html, updateAt, expiresAt: Date.now() + CACHE_TTL_MS });
+    json(res, 200, { html, cached: false, update_at: updateAt });
   } catch (error) {
     json(res, 500, { error: error instanceof Error ? error.message : String(error) });
   }

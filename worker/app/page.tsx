@@ -3,12 +3,14 @@ import { getCachedClassInfo, recordRefreshError, TODAY_STALE_CACHE_KEY } from '.
 import { queryAll } from '../src/classTable';
 import { getEnv } from '../src/env';
 import type { ApiResponse } from '../src/frontendTypes';
+import { cookies } from 'next/headers';
 
 export const dynamic = 'force-dynamic';
 
 export default async function Home() {
   const initialData = await loadInitialData();
-  return <HomeClient initialData={initialData} />;
+  const initialIsDark = (await cookies()).get('darkMode')?.value === 'true';
+  return <HomeClient initialData={initialData} initialIsDark={initialIsDark} />;
 }
 
 async function loadInitialData(): Promise<ApiResponse> {

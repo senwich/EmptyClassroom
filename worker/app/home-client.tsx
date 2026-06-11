@@ -28,16 +28,27 @@ const CLASS_TIME_GROUPS = ['上午', '下午', '晚间'];
 
 type HomeClientProps = {
   initialData: ApiResponse;
+  initialIsDark: boolean;
 };
 
-export default function HomeClient({ initialData }: HomeClientProps) {
+function applyTheme(isDark: boolean) {
+  document.documentElement.classList.toggle('dark', isDark);
+  document.body.classList.toggle('dark', isDark);
+}
+
+function persistTheme(isDark: boolean) {
+  localStorage.setItem('darkMode', String(isDark));
+  document.cookie = `darkMode=${isDark}; path=/; max-age=31536000; samesite=lax`;
+}
+
+export default function HomeClient({ initialData, initialIsDark }: HomeClientProps) {
   const [messageApi, contextHolder] = message.useMessage();
   const [loading, setLoading] = useState(false);
   const [todayData, setTodayData] = useState<ApiResponse>(initialData);
   const [selectedCampus, setSelectedCampus] = useState(() => sortCampus(Object.keys(initialData.data?.campus_info_map ?? {}))[0] ?? '');
   const [selectedBuildings, setSelectedBuildings] = useState<string[]>([]);
   const [selectedClassTimes, setSelectedClassTimes] = useState<number[]>([]);
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(initialIsDark);
   const [reportOpen, setReportOpen] = useState(false);
   const [reportText, setReportText] = useState('');
   const [reporting, setReporting] = useState(false);
@@ -61,9 +72,9 @@ export default function HomeClient({ initialData }: HomeClientProps) {
   useEffect(() => {
     const mql = window.matchMedia('(prefers-color-scheme: dark)');
     const applyMode = (matches: boolean) => {
-      document.body.classList.toggle('dark', matches);
+      applyTheme(matches);
       setIsDark(matches);
-      localStorage.setItem('darkMode', String(matches));
+      persistTheme(matches);
     };
     const stored = localStorage.getItem('darkMode');
     applyMode(stored === null ? mql.matches : stored === 'true');
@@ -133,8 +144,8 @@ export default function HomeClient({ initialData }: HomeClientProps) {
                 <Button icon={<MessageOutlined />} onClick={() => setReportOpen(true)} />
                 <Button icon={<ReloadOutlined />} onClick={loadData} />
                 <Switch checkedChildren="暗色" unCheckedChildren="亮色" checked={isDark} onChange={(checked) => {
-                  document.body.classList.toggle('dark', checked);
-                  localStorage.setItem('darkMode', String(checked));
+                  applyTheme(checked);
+                  persistTheme(checked);
                   setIsDark(checked);
                 }} />
               </div>

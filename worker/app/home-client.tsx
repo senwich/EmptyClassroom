@@ -8,21 +8,23 @@ import type { ApiResponse, EmptyClassroom } from '../src/frontendTypes';
 import Footer from './footer';
 
 const CLASS_TIME_OPTIONS = [
-  { value: 0, start: '08:00', end: '08:45' },
-  { value: 1, start: '08:50', end: '09:35' },
-  { value: 2, start: '09:50', end: '10:35' },
-  { value: 3, start: '10:40', end: '11:25' },
-  { value: 4, start: '11:30', end: '12:15' },
-  { value: 5, start: '13:00', end: '13:45' },
-  { value: 6, start: '13:50', end: '14:35' },
-  { value: 7, start: '14:45', end: '15:30' },
-  { value: 8, start: '15:40', end: '16:25' },
-  { value: 9, start: '16:35', end: '17:20' },
-  { value: 10, start: '17:25', end: '18:10' },
-  { value: 11, start: '18:30', end: '19:15' },
-  { value: 12, start: '19:20', end: '20:05' },
-  { value: 13, start: '20:10', end: '20:55' },
+  { value: 0, period: '上午', label: '08:00-08:45' },
+  { value: 1, period: '上午', label: '08:50-09:35' },
+  { value: 2, period: '上午', label: '09:50-10:35' },
+  { value: 3, period: '上午', label: '10:40-11:25' },
+  { value: 4, period: '上午', label: '11:30-12:15' },
+  { value: 5, period: '下午', label: '13:00-13:45' },
+  { value: 6, period: '下午', label: '13:50-14:35' },
+  { value: 7, period: '下午', label: '14:45-15:30' },
+  { value: 8, period: '下午', label: '15:40-16:25' },
+  { value: 9, period: '下午', label: '16:35-17:20' },
+  { value: 10, period: '下午', label: '17:25-18:10' },
+  { value: 11, period: '晚间', label: '18:30-19:15' },
+  { value: 12, period: '晚间', label: '19:20-20:05' },
+  { value: 13, period: '晚间', label: '20:10-20:55' },
 ];
+
+const CLASS_TIME_GROUPS = ['上午', '下午', '晚间'];
 
 type HomeClientProps = {
   initialData: ApiResponse;
@@ -207,22 +209,27 @@ function ClassTimeMatrix({ selectedClassTimes, onChange }: { selectedClassTimes:
         </Button>
       </div>
       <div className="class-time-grid">
-        {CLASS_TIME_OPTIONS.map((item) => {
-          const selected = selectedSet.has(item.value);
-          return (
-            <button
-              type="button"
-              key={item.value}
-              className={`class-time-block${selected ? ' selected' : ''}`}
-              onClick={() => toggle(item.value)}
-              aria-pressed={selected ? 'true' : 'false'}
-            >
-              <span>{item.start}</span>
-              <strong>{item.start}-{item.end}</strong>
-              <span>{item.end}</span>
-            </button>
-          );
-        })}
+        {CLASS_TIME_GROUPS.map((group) => (
+          <div className="class-time-group" key={group}>
+            <div className="class-time-group-title">{group}</div>
+            <div className="class-time-group-grid">
+              {CLASS_TIME_OPTIONS.filter((item) => item.period === group).map((item) => {
+                const selected = selectedSet.has(item.value);
+                return (
+                  <button
+                    type="button"
+                    key={item.value}
+                    className={`class-time-block${selected ? ' selected' : ''}`}
+                    onClick={() => toggle(item.value)}
+                    aria-pressed={selected ? 'true' : 'false'}
+                  >
+                    {item.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

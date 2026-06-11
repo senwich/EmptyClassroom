@@ -8,7 +8,7 @@ export default function Footer() {
           <a href="mailto:chengensen@foxmail.com">chengensen@foxmail.com</a>或微信senwich30454
         </span>
       </div>
-      <div className="ad-support-bar">@senwich remix 2026, on @Jray&apos;s work</div>
+      <div className="ad-support-bar">@senwich remix 2026, on @Jray&apos;s work 空谷幽兰般的自习体验，触手可得！</div>
     </>
   );
 }

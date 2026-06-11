@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from 'next';
 import { cookies } from 'next/headers';
+import Script from 'next/script';
 import './globals.css';
+
+const GOOGLE_ANALYTICS_ID = 'G-JW44VDK41M';
 
 export const metadata: Metadata = {
   title: 'BUPT 空教室查询',
@@ -46,6 +49,15 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   return (
     <html lang="zh-Hans" className={isDark ? 'dark' : undefined} suppressHydrationWarning>
       <body className={isDark ? 'dark' : undefined} suppressHydrationWarning>
+        <Script src={`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ANALYTICS_ID}`} strategy="afterInteractive" />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${GOOGLE_ANALYTICS_ID}');
+          `}
+        </Script>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         {children}
       </body>

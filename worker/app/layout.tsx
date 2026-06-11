@@ -5,6 +5,15 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'BUPT 空教室查询',
   description: 'BUPT empty classroom query on Cloudflare Workers',
+  manifest: '/manifest.webmanifest',
+  applicationName: 'BUPT 空教室查询',
+  formatDetection: {
+    telephone: false,
+  },
+  icons: {
+    icon: '/icon.svg',
+    apple: '/apple-icon.svg',
+  },
   appleWebApp: {
     capable: true,
     title: '空教室查询',
@@ -15,6 +24,10 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#141414' },
+  ],
 };
 
 const THEME_INIT_SCRIPT = `

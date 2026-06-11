@@ -49,6 +49,7 @@ export default function HomeClient({ initialData, initialIsDark }: HomeClientPro
   const [selectedBuildings, setSelectedBuildings] = useState<string[]>([]);
   const [selectedClassTimes, setSelectedClassTimes] = useState<number[]>([]);
   const [isDark, setIsDark] = useState(initialIsDark);
+  const [hydrated, setHydrated] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [reportText, setReportText] = useState('');
   const [reporting, setReporting] = useState(false);
@@ -80,6 +81,7 @@ export default function HomeClient({ initialData, initialIsDark }: HomeClientPro
     applyMode(stored === null ? mql.matches : stored === 'true');
     const listener = (event: MediaQueryListEvent) => applyMode(event.matches);
     mql.addEventListener('change', listener);
+    setHydrated(true);
     return () => mql.removeEventListener('change', listener);
   }, []);
 
@@ -130,7 +132,7 @@ export default function HomeClient({ initialData, initialIsDark }: HomeClientPro
     <ConfigProvider theme={{ algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm }}>
       {contextHolder}
       <Spin spinning={loading}>
-        <main className="app-shell">
+        <main className={`app-shell${hydrated ? ' app-shell-ready' : ''}`}>
           <div className="logo-mark">空</div>
           <Typography.Title level={3}>BUPT 空教室查询</Typography.Title>
           {todayData.data?.notification?.showNotification ? (

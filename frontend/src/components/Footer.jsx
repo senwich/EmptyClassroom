@@ -20,6 +20,7 @@ function Footer() {
           icon={<GithubOutlined />}
         ></Button>
       </Text>
+      <Text>@senwich remix 2026, on @Jray's work</Text>
     </footer>
   );
 }

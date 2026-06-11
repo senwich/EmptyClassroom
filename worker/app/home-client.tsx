@@ -5,6 +5,7 @@ import { MessageOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useEffect, useMemo, useState } from 'react';
 import { calculateEmptyClassrooms } from '../src/calculateEmptyClassrooms';
 import type { ApiResponse, EmptyClassroom } from '../src/frontendTypes';
+import Footer from './footer';
 
 const CLASS_TIME_OPTIONS = [
   { value: 0, start: '08:00', end: '08:45' },
@@ -174,15 +175,7 @@ export default function HomeClient({ initialData }: HomeClientProps) {
             )}
           </Card>
 
-          <div className="ad-support-bar">
-            <span className="ad-support-icon" aria-hidden="true">📣</span>
-            <span>
-              为了本项目的可持续健康发展，诚征校内外研究生招生广告，相关收益将用于支持项目运营。合作联系：
-              <a href="mailto:chengensen@foxmail.com">chengensen@foxmail.com</a>
-              ，谢谢您的支持！
-            </span>
-          </div>
-          <div className="footer">Cloudflare Workers + Next.js + TypeScript</div>
+          <Footer />
         </main>
       </Spin>
 
@@ -222,7 +215,7 @@ function ClassTimeMatrix({ selectedClassTimes, onChange }: { selectedClassTimes:
               key={item.value}
               className={`class-time-block${selected ? ' selected' : ''}`}
               onClick={() => toggle(item.value)}
-              aria-pressed={selected}
+              aria-pressed={selected ? 'true' : 'false'}
             >
               <span>{item.start}</span>
               <strong>{item.start}-{item.end}</strong>

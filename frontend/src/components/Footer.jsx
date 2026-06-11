@@ -8,9 +8,8 @@ function Footer() {
       <div className="ad-support-bar">
         <span className="ad-support-icon" aria-hidden="true">📣</span>
         <span>
-          为了本项目的可持续健康发展，诚征校内外研究生招生广告，相关收益将用于支持项目运营。合作联系：
-          <a href="mailto:chengensen@foxmail.com">chengensen@foxmail.com</a>
-          ，谢谢您的支持！
+          为了本项目可持续运营，现以极低价格诚征研究生招生广告。有兴趣合作的同学请致信森林电波工作室：
+          <a href="mailto:chengensen@foxmail.com">chengensen@foxmail.com</a>或微信senwich30454
         </span>
       </div>
       <Text>

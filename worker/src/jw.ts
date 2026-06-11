@@ -303,6 +303,9 @@ export async function queryOne(env: Env, campusId: number): Promise<JWClassInfo[
 async function queryOneViaProxy(env: Env, campusId: number): Promise<JWClassInfo[]> {
   const token = requireSecret(env.JW_PROXY_TOKEN, 'JW_PROXY_TOKEN');
   const baseUrl = env.JW_PROXY_URL?.replace(/\/+$/u, '');
+  if (!baseUrl) {
+    throw new Error('JW proxy mode enabled but JW_PROXY_URL is empty');
+  }
   const resp = await fetchWithTimeout(env.EC_FETCH ?? fetch, `${baseUrl}/api/query?campusId=${campusId}`, {
     headers: {
       authorization: `Bearer ${token}`,
@@ -314,9 +317,13 @@ async function queryOneViaProxy(env: Env, campusId: number): Promise<JWClassInfo
   }
   const data = JSON.parse(text) as { html?: string; error?: string };
   if (typeof data.html !== 'string') {
-    throw new Error(`JW proxy returned invalid data: ${data.error ?? text.slice(0, 300)}`);
+    throw new Error(`JW proxy returned invalid data: url=${baseUrl}/api/query?campusId=${campusId} body=${data.error ?? text.slice(0, 300)}`);
   }
-  return parseClassroomTableHtml(data.html, campusId);
+  try {
+    return parseClassroomTableHtml(data.html, campusId);
+  } catch (error) {
+    throw new Error(`JW proxy HTML parse failed: campusId=${campusId} ${error instanceof Error ? error.message : String(error)}`);
+  }
 }
 
 export const __test__ = { parseClassroomTable };
